@@ -53,9 +53,10 @@ async function run() {
       res.send(reviews);
     });
 
-    app.post("/orders", async (req, res) => {
-      const { email } = req.query;
-      console.log(email);
+    app.post("/order", async (req, res) => {
+      const order = req.body;
+      const result = await orderCollection.insertOne(order);
+      res.send({ success: true, result });
     });
   } finally {
     // await client.close();
