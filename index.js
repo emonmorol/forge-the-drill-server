@@ -21,7 +21,22 @@ async function run() {
     await client.connect();
     const toolCollection = client.db("forge-the-drill").collection("drills");
     const reviewCollection = client.db("forge-the-drill").collection("reviews");
+    const orderCollection = client.db("forge-the-drill").collection("orders");
+    const userCollection = client.db("forge-the-drill").collection("users");
 
+    app.put("/user", async (req, res) => {
+      const { email, name } = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: name,
+          email: email,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      res.send({ success: true, result });
+    });
     app.get("/drill", async (req, res) => {
       const drills = await toolCollection.find({}).toArray();
       res.send(drills);
@@ -36,6 +51,11 @@ async function run() {
     app.get("/review", async (req, res) => {
       const reviews = await reviewCollection.find({}).toArray();
       res.send(reviews);
+    });
+
+    app.post("/orders", async (req, res) => {
+      const { email } = req.query;
+      console.log(email);
     });
   } finally {
     // await client.close();
