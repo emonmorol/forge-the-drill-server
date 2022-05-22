@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -20,13 +20,25 @@ async function run() {
   try {
     await client.connect();
     const toolCollection = client.db("forge-the-drill").collection("drills");
+    const reviewCollection = client.db("forge-the-drill").collection("reviews");
 
     app.get("/drill", async (req, res) => {
-      const drills = await toolCollection.find(query).toArray();
+      const drills = await toolCollection.find({}).toArray();
       res.send(drills);
     });
+
+    app.get("/drill/:id", async (req, res) => {
+      const id = req.params;
+      const review = await toolCollection.findOne({ _id: ObjectId(id) });
+      res.send(review);
+    });
+
+    app.get("/review", async (req, res) => {
+      const reviews = await reviewCollection.find({}).toArray();
+      res.send(reviews);
+    });
   } finally {
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
