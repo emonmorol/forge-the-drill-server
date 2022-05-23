@@ -80,6 +80,21 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/drill/:id", async (req, res) => {
+      const id = req.params;
+      const { remainingQuantity } = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          availableQuantity: remainingQuantity,
+        },
+      };
+      const result = await toolCollection.updateOne(filter, updateDoc, options);
+      console.log("e", result);
+      res.send({ success: true, result });
+    });
+
     app.get("/review", async (req, res) => {
       const reviews = await reviewCollection.find({}).toArray();
       res.send(reviews);
