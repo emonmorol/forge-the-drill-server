@@ -62,6 +62,12 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc, options);
       res.send({ success: true, result });
     });
+    app.get("/user-role", async (req, res) => {
+      const { email } = req.query;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      res.send(user);
+    });
 
     app.get("/drill", async (req, res) => {
       const drills = await toolCollection.find({}).toArray();
