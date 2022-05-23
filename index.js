@@ -65,6 +65,23 @@ async function run() {
       res.send({ success: true, result });
     });
 
+    app.put("/order", async (req, res) => {
+      const { orderId, transactionId } = req.body;
+      const filter = { _id: ObjectId(orderId) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          transactionId: transactionId,
+        },
+      };
+      const result = await orderCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send({ success: true, result });
+    });
+
     app.get("/order", async (req, res) => {
       const { email } = req.query;
       const orders = await orderCollection.find({ userEmail: email }).toArray();
