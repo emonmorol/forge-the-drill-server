@@ -8,13 +8,14 @@ const {
   ObjectId,
   ObjectID,
 } = require("mongodb");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@forgethedrill.6ry4r.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
+
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -49,8 +50,8 @@ async function run() {
 
     app.get("/drill/:id", async (req, res) => {
       const id = req.params;
-      const review = await toolCollection.findOne({ _id: ObjectId(id) });
-      res.send(review);
+      const result = await toolCollection.findOne({ _id: ObjectId(id) });
+      res.send(result);
     });
 
     app.get("/review", async (req, res) => {
@@ -70,11 +71,32 @@ async function run() {
       res.send(orders);
     });
 
+    app.get("/order/:id", async (req, res) => {
+      const { id } = req.params;
+      const order = await orderCollection.findOne({ _id: ObjectId(id) });
+      res.send(order);
+    });
+
     app.delete("/order", async (req, res) => {
       const { id } = req.query;
       const query = { _id: ObjectID(id) };
       const result = await orderCollection.deleteOne(query);
       res.send(result);
+    });
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const { totalAmount } = req.body;
+      const amount = totalAmount * 100;
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
     });
   } finally {
     // await client.close();
