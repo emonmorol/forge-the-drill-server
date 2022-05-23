@@ -49,6 +49,20 @@ async function run() {
       res.send(users);
     });
 
+    app.put("/user-role", async (req, res) => {
+      const { id } = req.query;
+      const { role } = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          role: role,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      res.send({ success: true, result });
+    });
+
     app.get("/drill", async (req, res) => {
       const drills = await toolCollection.find({}).toArray();
       res.send(drills);
