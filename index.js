@@ -2,7 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 require("dotenv").config();
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const {
+  MongoClient,
+  ServerApiVersion,
+  ObjectId,
+  ObjectID,
+} = require("mongodb");
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -57,6 +62,19 @@ async function run() {
       const order = req.body;
       const result = await orderCollection.insertOne(order);
       res.send({ success: true, result });
+    });
+
+    app.get("/order", async (req, res) => {
+      const { email } = req.query;
+      const orders = await orderCollection.find({ userEmail: email }).toArray();
+      res.send(orders);
+    });
+
+    app.delete("/order", async (req, res) => {
+      const { id } = req.query;
+      const query = { _id: ObjectID(id) };
+      const result = await orderCollection.deleteOne(query);
+      res.send(result);
     });
   } finally {
     // await client.close();
