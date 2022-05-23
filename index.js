@@ -43,6 +43,12 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc, options);
       res.send({ success: true, result });
     });
+
+    app.get("/user", async (req, res) => {
+      const users = await userCollection.find({}).toArray();
+      res.send(users);
+    });
+
     app.get("/drill", async (req, res) => {
       const drills = await toolCollection.find({}).toArray();
       res.send(drills);
@@ -57,6 +63,11 @@ async function run() {
     app.get("/review", async (req, res) => {
       const reviews = await reviewCollection.find({}).toArray();
       res.send(reviews);
+    });
+    app.post("/review", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
     });
 
     app.post("/order", async (req, res) => {
