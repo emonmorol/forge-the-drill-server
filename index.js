@@ -46,6 +46,18 @@ async function run() {
     const orderCollection = client.db("forge-the-drill").collection("orders");
     const userCollection = client.db("forge-the-drill").collection("users");
 
+    const verifyAdmin = async (req, res, next) => {
+      const emailReq = req.decoded.email;
+      const userInfo = await userCollection.findOne({
+        email: emailReq,
+      });
+      if (userInfo.role === "admin") {
+        next();
+      } else {
+        res.status(403).send({ message: "Forbidden Access" });
+      }
+    };
+
     app.put("/user", async (req, res) => {
       const { email, name } = req.body;
       const filter = { email: email };
@@ -66,7 +78,7 @@ async function run() {
       res.send(users);
     });
 
-    app.put("/user-role", verifyAccess, async (req, res) => {
+    app.put("/user-role", verifyAccess, verifyAdmin, async (req, res) => {
       const { id } = req.query;
       const { role } = req.body;
       const filter = { _id: ObjectId(id) };
@@ -141,7 +153,7 @@ async function run() {
       res.send({ success: true, result });
     });
 
-    app.get("/all-order", verifyAccess, async (req, res) => {
+    app.get("/all-order", verifyAccess, verifyAdmin, async (req, res) => {
       const orders = await orderCollection.find({}).toArray();
       res.send(orders);
     });
