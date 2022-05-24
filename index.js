@@ -62,6 +62,28 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc, options);
       res.send({ success: true, result });
     });
+
+    app.put("/update-user", async (req, res) => {
+      const { qEmail } = req.query;
+      const { gender, phone, address, linkedInLink, education, image, name } =
+        req.body;
+      const filter = { email: qEmail };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          gender: gender,
+          phone: phone,
+          address: address,
+          linkedInLink: linkedInLink,
+          education: education,
+          image: image,
+          name: name,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc, options);
+      res.send({ success: true, result });
+    });
+
     app.get("/user-role", async (req, res) => {
       const { email } = req.query;
       const query = { email: email };
@@ -82,12 +104,12 @@ async function run() {
 
     app.patch("/drill/:id", async (req, res) => {
       const id = req.params;
-      const { remainingQuantity } = req.body;
+      const { updatedQuantity } = req.body;
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
         $set: {
-          availableQuantity: remainingQuantity,
+          availableQuantity: updatedQuantity,
         },
       };
       const result = await toolCollection.updateOne(filter, updateDoc, options);
