@@ -96,6 +96,12 @@ async function run() {
       res.send(drills);
     });
 
+    app.post("/drill", async (req, res) => {
+      const drill = req.body;
+      const drills = await toolCollection.insertOne(drill);
+      res.send(drills);
+    });
+
     app.get("/drill/:id", async (req, res) => {
       const id = req.params;
       const result = await toolCollection.findOne({ _id: ObjectId(id) });
