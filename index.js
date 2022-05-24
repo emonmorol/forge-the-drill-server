@@ -144,6 +144,20 @@ async function run() {
       res.send(orders);
     });
 
+    app.patch("/all-order/:id", async (req, res) => {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: status,
+        },
+      };
+      const result = await orderCollection.updateOne(filter, updateDoc);
+      res.send({ success: true, result });
+    });
+
     app.put("/order", async (req, res) => {
       const { orderId, transactionId } = req.body;
       const filter = { _id: ObjectId(orderId) };
