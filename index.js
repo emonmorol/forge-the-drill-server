@@ -139,6 +139,11 @@ async function run() {
       res.send({ success: true, result });
     });
 
+    app.get("/all-order", async (req, res) => {
+      const orders = await orderCollection.find({}).toArray();
+      res.send(orders);
+    });
+
     app.put("/order", async (req, res) => {
       const { orderId, transactionId } = req.body;
       const filter = { _id: ObjectId(orderId) };
