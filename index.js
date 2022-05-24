@@ -23,6 +23,21 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+const verifyAccess = (req, res, next) => {
+  const authorizationToken = req.headers.authorization;
+  if (!authorizationToken) {
+    return res.status(401).send({ message: "UnAuthorized access" });
+  }
+  const token = authorizationToken.split(" ")[1];
+  jwt.verify(token, process.env.SECRET_JWT_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
+
 async function run() {
   try {
     await client.connect();
@@ -46,12 +61,12 @@ async function run() {
       res.send({ success: true, result, token });
     });
 
-    app.get("/user", async (req, res) => {
+    app.get("/user", verifyAccess, async (req, res) => {
       const users = await userCollection.find({}).toArray();
       res.send(users);
     });
 
-    app.put("/user-role", async (req, res) => {
+    app.put("/user-role", verifyAccess, async (req, res) => {
       const { id } = req.query;
       const { role } = req.body;
       const filter = { _id: ObjectId(id) };
@@ -65,7 +80,7 @@ async function run() {
       res.send({ success: true, result });
     });
 
-    app.put("/update-user", async (req, res) => {
+    app.put("/update-user", verifyAccess, async (req, res) => {
       const { qEmail } = req.query;
       const { gender, phone, address, linkedInLink, education, image, name } =
         req.body;
@@ -98,7 +113,7 @@ async function run() {
       res.send(drills);
     });
 
-    app.post("/drill", async (req, res) => {
+    app.post("/drill", verifyAccess, async (req, res) => {
       const drill = req.body;
       const drills = await toolCollection.insertOne(drill);
       res.send(drills);
@@ -110,43 +125,28 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/drill/:id", async (req, res) => {
-      const id = req.params;
-      const { updatedQuantity } = req.body;
-      const filter = { _id: ObjectId(id) };
-      const options = { upsert: true };
-      const updateDoc = {
-        $set: {
-          availableQuantity: updatedQuantity,
-        },
-      };
-      const result = await toolCollection.updateOne(filter, updateDoc, options);
-      console.log("e", result);
-      res.send({ success: true, result });
-    });
-
     app.get("/review", async (req, res) => {
       const reviews = await reviewCollection.find({}).toArray();
       res.send(reviews);
     });
-    app.post("/review", async (req, res) => {
+    app.post("/review", verifyAccess, async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
       res.send(result);
     });
 
-    app.post("/order", async (req, res) => {
+    app.post("/order", verifyAccess, async (req, res) => {
       const order = req.body;
       const result = await orderCollection.insertOne(order);
       res.send({ success: true, result });
     });
 
-    app.get("/all-order", async (req, res) => {
+    app.get("/all-order", verifyAccess, async (req, res) => {
       const orders = await orderCollection.find({}).toArray();
       res.send(orders);
     });
 
-    app.patch("/all-order/:id", async (req, res) => {
+    app.patch("/all-order/:id", verifyAccess, async (req, res) => {
       const { id } = req.params;
       const { status } = req.body;
 
@@ -160,7 +160,7 @@ async function run() {
       res.send({ success: true, result });
     });
 
-    app.put("/order", async (req, res) => {
+    app.put("/order", verifyAccess, async (req, res) => {
       const { orderId, transactionId } = req.body;
       const filter = { _id: ObjectId(orderId) };
       const options = { upsert: true };
@@ -177,26 +177,26 @@ async function run() {
       res.send({ success: true, result });
     });
 
-    app.get("/order", async (req, res) => {
+    app.get("/order", verifyAccess, async (req, res) => {
       const { email } = req.query;
       const orders = await orderCollection.find({ userEmail: email }).toArray();
       res.send(orders);
     });
 
-    app.get("/order/:id", async (req, res) => {
+    app.get("/order/:id", verifyAccess, async (req, res) => {
       const { id } = req.params;
       const order = await orderCollection.findOne({ _id: ObjectId(id) });
       res.send(order);
     });
 
-    app.delete("/order", async (req, res) => {
+    app.delete("/order", verifyAccess, async (req, res) => {
       const { id } = req.query;
       const query = { _id: ObjectID(id) };
       const result = await orderCollection.deleteOne(query);
       res.send(result);
     });
 
-    app.post("/create-payment-intent", async (req, res) => {
+    app.post("/create-payment-intent", verifyAccess, async (req, res) => {
       const { totalAmount } = req.body;
       const amount = totalAmount * 100;
 
