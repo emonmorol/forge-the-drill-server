@@ -125,7 +125,13 @@ async function run() {
       res.send(drills);
     });
 
-    app.post("/drill", verifyAccess, async (req, res) => {
+    app.delete("/drill", verifyAccess, verifyAdmin, async (req, res) => {
+      const { id } = req.query;
+      const drills = await toolCollection.deleteOne({ _id: ObjectId(id) });
+      res.send(drills);
+    });
+
+    app.post("/drill", verifyAccess, verifyAdmin, async (req, res) => {
       const drill = req.body;
       const drills = await toolCollection.insertOne(drill);
       res.send(drills);
@@ -141,6 +147,7 @@ async function run() {
       const reviews = await reviewCollection.find({}).toArray();
       res.send(reviews);
     });
+
     app.post("/review", verifyAccess, async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
@@ -158,7 +165,7 @@ async function run() {
       res.send(orders);
     });
 
-    app.patch("/all-order/:id", verifyAccess, async (req, res) => {
+    app.patch("/all-order/:id", verifyAccess, verifyAdmin, async (req, res) => {
       const { id } = req.params;
       const { status } = req.body;
 
