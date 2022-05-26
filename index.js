@@ -3,12 +3,7 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const {
-  MongoClient,
-  ServerApiVersion,
-  ObjectId,
-  ObjectID,
-} = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
@@ -210,7 +205,7 @@ async function run() {
 
     app.delete("/order", verifyAccess, async (req, res) => {
       const { id } = req.query;
-      const query = { _id: ObjectID(id) };
+      const query = { _id: ObjectId(id) };
       const result = await orderCollection.deleteOne(query);
       res.send(result);
     });
